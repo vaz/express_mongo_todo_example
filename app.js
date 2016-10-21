@@ -22,8 +22,9 @@ app.get('/', (req, res) => {
 // Fetch from Mongo all todos
 app.get("/todos", (req, res) => {
   // todos.all returns array of all todos in the callback
-  const allTodos = Todos.all();
-  res.render("todos/index", { todos: allTodos });
+  Todos.all((err, allTodos) => {
+    res.render("todos/index", { todos: allTodos });
+  });
 });
 
 // Form to create new todo
@@ -34,22 +35,25 @@ app.get("/todos/new", (req, res) => {
 // Create new todo in Mongo
 app.post("/todos", (req, res) => {
   const todo = { desc: req.body.desc, completed: false };
-  Todos.create(todo);
-  res.redirect("/todos");
+  Todos.create(todo, (err, result) => {
+    if (err) {
+      console.error(err);
+    }
+    res.redirect("/todos");
+  })
 });
 
 // Delete by (mongo) ID
 app.delete("/todos/:id", (req, res) => {
   const id = req.params.id;
-  try {
-    Todos.destroy(id);
-  }
-  catch (e) {
-    console.error(e);
-  }
-  res.redirect("/todos");
-});
 
+  Todos.destroy(id, (err, result) => {
+    if (err) {
+      console.error(err);
+    }
+    res.redirect("/todos");
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
